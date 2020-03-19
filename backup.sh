@@ -16,16 +16,21 @@ tar -zcf $MONGO_FILE dump/
 rm -rf dump/
 echo "Mongo dump completed"
 
-echo "Starting documents backup"
-DOCUMENTS_FILE="/backups/$DATE-documents-backup.tar.gz"
-tar -zcf $DOCUMENTS_FILE /documents
-echo "Documents backup completed"
+if [[ "$DOCUMENTS_BACKUP" ]]; then
+  : "${DOCUMENTS_FOLDER:=/documents}"
+  echo "Starting documents backup from $DOCUMENTS_FOLDER"
+  DOCUMENTS_FILE="/backups/$DATE-documents-backup.tar.gz"
+  tar -zcf $DOCUMENTS_FILE $DOCUMENTS_FOLDER
+  echo "Documents backup completed"
+fi
 
 echo "Start sending backups to FTP server"
 ncftpput -u $FTP_USER -p $FTP_PASSWORD -o useCLNT=0,useMLST=0,useSIZE=0,allowProxyForPORT=1 $FTP_HOST $FTP_BACKUP_FOLDER $MONGO_FILE
 rm -f $MONGO_FILE
-ncftpput -u $FTP_USER -p $FTP_PASSWORD -o useCLNT=0,useMLST=0,useSIZE=0,allowProxyForPORT=1 $FTP_HOST $FTP_BACKUP_FOLDER $DOCUMENTS_FILE
-rm -f $DOCUMENTS_FILE
+if [[ "$DOCUMENTS_BACKUP" ]]; then
+  ncftpput -u $FTP_USER -p $FTP_PASSWORD -o useCLNT=0,useMLST=0,useSIZE=0,allowProxyForPORT=1 $FTP_HOST $FTP_BACKUP_FOLDER $DOCUMENTS_FILE
+  rm -f $DOCUMENTS_FILE
+fi
 echo "Backups sent to FTP server"
 rm -rf backups/
 
