@@ -1,2 +1,2 @@
 # mongo-backupper
-Docker container with mongo client, cron and ncftp
+Docker container with mongo client, cron, ncftp and aws-cli
